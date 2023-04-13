@@ -66,6 +66,6 @@ jobs:
           draft: "false"
           name: ${{ github.event.client_payload.release_name }}
           files: |
-            firmware_files/firmware.bin
-            firmware_files/firmware.hex
+            firmware_files/.pio/build/core2/firmware.bin
+            firmware_files/.pio/build/core2/firmware.hex
             firmware_files$/LICENSE
