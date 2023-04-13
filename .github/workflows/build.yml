@@ -6,7 +6,8 @@ on:
         description: "The branch that will be used in the build"
         required: true
         default: "master"
-  repository_dispatch: [trigger_firmware_build]
+  repository_dispatch: 
+    types: ["trigger_firmware_build"]
 
 jobs:
   build:
