@@ -1,4 +1,5 @@
 {
+    "artifact_name": "firmware",
     "macros": [],
     "config":{},
     "target_overrides": {
