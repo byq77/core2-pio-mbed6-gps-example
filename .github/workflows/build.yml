@@ -2,69 +2,110 @@ name: Build and release
 on:
   workflow_dispatch:
     inputs:
-      target_branch:
+      branch:
         description: "The branch that will be used in the build"
         required: true
         default: "master"
-  repository_dispatch: 
-    types: ["trigger_firmware_build"]
+      create_release:
+        description: "Do you want to create release"
+        required: false
+        type: choice
+        options:
+          - "yes"
+          - "no"
+        default: "no"
+      release_name:
+        description: "Custom release name"
+        required: false
+        default: "Mock release"
+      release_tag:
+        description: "Custom release tag"
+        required: false
+        default: "mock"
+
+  repository_dispatch:
+    types: ["trigger_build_and_release"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ env.artifact_name }}
+      create_release: ${{ env.create_release }}
+      release_name: ${{ env.release_name }}
+      tag_name: ${{ env.tag_name }} 
     steps:
-      - name: Prepare arguments workflow_dispatch
+      - 
+        name: Prepare arguments workflow_dispatch
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        env:
-          FIRMWARE_REF: ${{ github.event.inputs.target_branch }}
         run: |
-          echo "Triggered by workflow_dispatch event"
-
-      - name: Prepare arguments repository_dispatch
-        if: ${{ github.event.action == 'trigger_firmware_build' }}
-        env:
-          FIRMWARE_REF: ${{ github.event.client_payload.ref }}
+          echo "firmware_ref=${{ github.event.inputs.branch }}" >> $GITHUB_ENV
+          echo "create_release=${{ github.event.inputs.create_release }}" >> $GITHUB_ENV
+          echo "release_name=${{ github.event.inputs.release_name }}" >> $GITHUB_ENV
+          echo "tag_name=${{ github.event.inputs.release_tag }}" >> $GITHUB_ENV
+      - 
+        name: Prepare arguments repository_dispatch
+        if: ${{ github.event.action == 'trigger_build_and_release' }}
         run: |
-          echo "Triggered by repository_dispatch event"
-
-      - name: Checkout repository and submodules
+          echo "firmware_ref=${{ github.event.client_payload.release_version }}" >> $GITHUB_ENV        
+          echo "create_release=yes" >> $GITHUB_ENV
+          echo "release_name=Release v${{ github.event.client_payload.release_version }}" >> $GITHUB_ENV
+          echo "tag_name=${{ github.event.client_payload.release_version }}" >> $GITHUB_ENV
+      - 
+        name: Checkout repository
         uses: actions/checkout@v3
         with:
-          ref: ${{ env.FIRMWARE_REF }}
-
-      - name: Installing platformio
-        run: pip3 install -U platformio==6.1.6
-
-      - name: Build current project using platformio 6.1.6
+          ref: ${{ env.firmware_ref }}
+      - 
+        name: Installing platformio
+        run: pip3 install -U platformio
+      - 
+        name: Build current project using platformio
         run: |
           pio lib install
           pio run
-
-      - name: Upload firmware files
+      - 
+        name: Prepare firmware files
+        id: prepare-files
+        run: |
+          echo "artifact_name=firmware_$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          mkdir out           
+          cp ${{ github.workspace }}/.pio/build/core2_diff/firmware.bin out/firmware.bin
+          cp ${{ github.workspace }}/.pio/build/core2_diff/firmware.hex out/firmware.hex
+          cp ${{ github.workflow }}/LICENSE out/LICENSE
+      -
+        name: Create custom tag 
+        if: ${{ github.event_name == 'workflow_dispatch' && env.create_release == 'yes' }}  
+        run: |
+          git tag ${{ env.tag_name }}
+          git push --tags
+      - 
+        name: Upload firmware files
         uses: actions/upload-artifact@v3
         with:
-          name: firmware_files
-          path: |
-            ${{ github.workspace }}/.pio/build/core2/firmware.bin
-            ${{ github.workspace }}/.pio/build/core2/firmware.hex
-            ${{ github.workspace }}/LICENSE
+          name: ${{ env.artifact_name }}
+          path: out/*
+
   release:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ github.event.action == 'trigger_firmware_build' }}
+    if: ${{ needs.build.outputs.create_release == 'yes' }}
     steps:
-      - name: Download firmware files
+      - 
+        name: Download firmware files
         uses: actions/download-artifact@v3
         with:
-          name: firmware_files
+          name: ${{ needs.build.outputs.artifact_name }}
           path: firmware_files
-      - name: Release
+      - 
+        name: Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ needs.build.outputs.tag_name }}
           generate_release_notes: "true"
           token: ${{ secrets.WORKFLOW_PAT }}
           draft: "false"
-          name: ${{ github.event.client_payload.release_name }}
+          name: ${{ needs.build.outputs.release_name }}
           files: |
             firmware_files/.pio/build/core2/firmware.bin
             firmware_files/.pio/build/core2/firmware.hex
