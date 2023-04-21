@@ -70,8 +70,8 @@ jobs:
         run: |
           echo "artifact_name=firmware_$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           mkdir out           
-          cp ${{ github.workspace }}/.pio/build/core2_diff/firmware.bin out/firmware.bin
-          cp ${{ github.workspace }}/.pio/build/core2_diff/firmware.hex out/firmware.hex
+          cp ${{ github.workspace }}/.pio/build/core2/firmware.bin out/firmware.bin
+          cp ${{ github.workspace }}/.pio/build/core2/firmware.hex out/firmware.hex
           cp ${{ github.workflow }}/LICENSE out/LICENSE
       -
         name: Create custom tag 
