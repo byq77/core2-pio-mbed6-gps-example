@@ -1,0 +1,9 @@
+{
+    "name": "rosserial-mbed",
+    "version": "1.0.0",
+    "description": "Mbed rosserial library mbed6",
+    "keywords": "pio, ros, rosserial",
+    "build": {
+      "builder": "MbedLibBuilder"
+    }
+  }
