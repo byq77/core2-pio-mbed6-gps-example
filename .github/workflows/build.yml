@@ -72,7 +72,7 @@ jobs:
           mkdir out           
           cp ${{ github.workspace }}/.pio/build/core2/firmware.bin out/firmware.bin
           cp ${{ github.workspace }}/.pio/build/core2/firmware.hex out/firmware.hex
-          cp ${{ github.workflow }}/LICENSE out/LICENSE
+          cp ${{ github.workspace }}/LICENSE out/LICENSE
       -
         name: Create custom tag 
         if: ${{ github.event_name == 'workflow_dispatch' && env.create_release == 'yes' }}  
@@ -109,4 +109,4 @@ jobs:
           files: |
             firmware_files/.pio/build/core2/firmware.bin
             firmware_files/.pio/build/core2/firmware.hex
-            firmware_files$/LICENSE
+            firmware_files/LICENSE
