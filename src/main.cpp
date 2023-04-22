@@ -48,7 +48,7 @@ public:
     }
 
     /**
-     * @brief Run ros mock sensor node test.
+     * @brief Run the node.
      */
     void spin()
     {
