@@ -21,6 +21,9 @@ public:
         // initialise ros node
         initNode();
 
+        _gps1_msg.header.frame_id = "gps1";
+        _gps2_msg.header.frame_id = "gps2";
+
         // advertise publisher
         advertise(_gps1_pub);
         advertise(_gps2_pub);
@@ -69,7 +72,7 @@ public:
                     sensor_msgs::NavSatStatus nav_sat_status;
                     nav_sat_status.status = sensor_msgs::NavSatStatus::STATUS_FIX;
                     nav_sat_status.service = sensor_msgs::NavSatStatus::SERVICE_GPS; 
-                    _gps1_msg.status = sensor_msgs::NavSatStatus();
+                    _gps1_msg.status = nav_sat_status;
 
                     _gps1_pub.publish(&_gps1_msg);
                 }
@@ -82,7 +85,7 @@ public:
                     sensor_msgs::NavSatStatus nav_sat_status;
                     nav_sat_status.status = sensor_msgs::NavSatStatus::STATUS_FIX;
                     nav_sat_status.service = sensor_msgs::NavSatStatus::SERVICE_GPS; 
-                    _gps2_msg.status = sensor_msgs::NavSatStatus();
+                    _gps2_msg.status = nav_sat_status;
 
                     _gps2_pub.publish(&_gps2_msg);
                 }
@@ -108,7 +111,7 @@ private:
     sensor_msgs::NavSatFix _gps2_msg{};
 
     ros::Publisher _gps1_pub{"gps1", &_gps1_msg};
-    ros::Publisher _gps2_pub{"gps2", &_gps1_msg};
+    ros::Publisher _gps2_pub{"gps2", &_gps2_msg};
 };
 
 int main()
