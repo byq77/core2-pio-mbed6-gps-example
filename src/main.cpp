@@ -66,7 +66,8 @@ public:
             {
                 if(_gps1.update())
                 {
-                    loginfo("GPS1 sample received");
+                    loginfo("GPS1:");
+                    loginfo(_gps1.getLastMsg());
                     _gps1_msg.latitude = convertToRosSatPos(_gps1.latitude, _gps1.ns);
                     _gps1_msg.longitude = convertToRosSatPos(_gps1.longitude, _gps1.ew);
                     sensor_msgs::NavSatStatus nav_sat_status;
@@ -79,7 +80,8 @@ public:
 
                 if(_gps2.update())
                 {
-                    loginfo("GPS2 sample received");
+                    loginfo("GPS2:");
+                    loginfo(_gps1.getLastMsg());
                     _gps2_msg.latitude = convertToRosSatPos(_gps2.latitude, _gps2.ns);
                     _gps2_msg.longitude = convertToRosSatPos(_gps2.longitude, _gps2.ew);
                     sensor_msgs::NavSatStatus nav_sat_status;
