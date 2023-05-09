@@ -81,7 +81,7 @@ public:
                 if(_gps2.update())
                 {
                     loginfo("GPS2:");
-                    loginfo(_gps1.getLastMsg());
+                    loginfo(_gps2.getLastMsg());
                     _gps2_msg.latitude = convertToRosSatPos(_gps2.latitude, _gps2.ns);
                     _gps2_msg.longitude = convertToRosSatPos(_gps2.longitude, _gps2.ew);
                     sensor_msgs::NavSatStatus nav_sat_status;

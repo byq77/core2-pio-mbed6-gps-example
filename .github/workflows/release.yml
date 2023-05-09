@@ -3,19 +3,38 @@ on:
   pull_request:
     branches: master
     types: [closed]
-
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "What to bump"
+        required: true
+        type: choice
+        options:
+          - "patch"
+          - "minor"
+          - "major"
 jobs:
   get-bump:
     name: Get version bump
     runs-on: ubuntu-latest
     outputs:
-      bump: ${{ steps.get-version-bump.outputs.bump }}
+      bump: ${{ env.bump }}
     steps:
+      -
+        name: Get version bump workflow_dispatch
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo "bump=${{ github.event.inputs.bump }}" >> $GITHUB_ENV
       - 
-        name: Get version bump
-        if: github.event.pull_request.merged == true
+        name: Get version bump pull_request
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged == true }}
         id: get-version-bump
         uses: husarion-ci/action-get-version-bump@latest
+      - 
+        name: Set output if pull_request
+        if: ${{ steps.get-version-bump.outcome == 'success' }}  
+        run: |
+          echo "bump=${{ steps.get-version-bump.outputs.bump }}" >> $GITHUB_ENV
 
   bump-version:
     name: Bump version
